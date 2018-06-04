@@ -1,4 +1,15 @@
-const User = require('../user');
+const jwt = require('jwt-simple');
+const config = require('../config');
+const User = require('../models/user');
+
+function tokenForUser(user) {
+  const timestamp = new Date().getTime();
+  //{ subject, issued at time }
+  return jwt.encode({
+    sub: user._id,
+    iat: timestamp
+  }, config.secret);
+}
 
 exports.signup = function(req, res, next) {
   // console.log(req.body, res);
@@ -28,7 +39,11 @@ exports.signup = function(req, res, next) {
         return next(err);
       }
 
-      return res.send({success: true});
+      return res.send({token: tokenForUser(newUser)});
     });
   });
+}
+
+exports.signin = function(req, res, next) {
+  res.send({token: tokenForUser(req.user)});
 }
